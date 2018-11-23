@@ -16,10 +16,11 @@ int main(int argc, char** argv){
 	}
 
 	zmm_t a, b, t;
+	int lp = atoi(argv[1]);
 
-	PTR(a) = malloc(8192);
-	PTR(b) = malloc(8192);
-	PTR(t) = calloc(1024, sizeof(long));
+	PTR(a) = malloc(64 * lp);
+	PTR(b) = malloc(64 * lp);
+	PTR(t) = calloc(4*lp, sizeof(long));
 
 /*
 	int *a = malloc(8192);
@@ -32,17 +33,16 @@ int main(int argc, char** argv){
 	}
 
 	int i;
-	int lp = atoi(argv[1]);
 
 	SIZ(a) = SIZ(b) = lp;
 	SIZ(t) = 0;
 
 	for(i=0; i<lp; i++){
 		
-		PTR(a)[i] = rand() % 10;
-		PTR(b)[i] = rand() % 10;
-		//PTR(a)[i] = 0x11111111;
-		//PTR(b)[i] = 0x11111111;
+		//PTR(a)[i] = 0xffff;
+		//PTR(b)[i] = 0xffff;
+		PTR(a)[i] = rand() & 0xffff;
+		PTR(b)[i] = rand() & 0xffff;
 	}
 
 	multiply(a, b, t);	
