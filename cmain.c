@@ -39,10 +39,10 @@ int main(int argc, char** argv){
 
 	for(i=0; i<lp; i++){
 		
-		//PTR(a)[i] = 0xffff;
-		//PTR(b)[i] = 0xffff;
-		PTR(a)[i] = rand() & 0xffff;
-		PTR(b)[i] = rand() & 0xffff;
+		PTR(a)[i] = 0xfffffff;
+		PTR(b)[i] = 0xfffffff;
+		//PTR(a)[i] = rand() & 0xffff;
+		//PTR(b)[i] = rand() & 0xffff;
 	}
 
 	multiply(a, b, t);	
@@ -53,6 +53,10 @@ int main(int argc, char** argv){
 	puts("");
 */
 	display(PTR(a), PTR(b), lp, PTR(t));	
+
+	free(PTR(a));
+	free(PTR(b));
+	free(PTR(t));
 
 	return 0;
 }

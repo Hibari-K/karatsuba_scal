@@ -1,5 +1,5 @@
 CC		= gcc
-CFLAGS	= -O2 -Wall
+CFLAGS	= -O0 -Wall -g
 OBJ		= cmain.o karatsuba.o multiply.o 
 PROG	= karatsuba
 

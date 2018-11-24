@@ -3,8 +3,11 @@
 
 #include "zmm_mul.h"
 
-void mul_karatsuba(unsigned int *a, unsigned int *b, int size, unsigned int *t);
-void doCarry(unsigned int* a, int size);
+void mul_karatsuba(unsigned int *a, unsigned int *b, int size, unsigned long *t);
+//void doCarry(unsigned int* a, int size);
+void doCarry_long(unsigned long *a, int size, unsigned int *z);
+
+extern unsigned long mid[1024];
 
 void multiply(zmm_t a, zmm_t b, zmm_t t){
 	
@@ -13,7 +16,7 @@ void multiply(zmm_t a, zmm_t b, zmm_t t){
 	if(SIZ(a) >= SIZ(b)) size = SIZ(a);
 	else size = SIZ(b);
 
-	mul_karatsuba(PTR(a), PTR(b), size, PTR(t));
+	mul_karatsuba(PTR(a), PTR(b), size, mid);
 
-	doCarry(PTR(t), size*2);
+	doCarry_long(mid, size*2, PTR(t));
 }

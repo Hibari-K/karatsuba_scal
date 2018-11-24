@@ -4,30 +4,33 @@
 
 #include "zmm_mul.h"
 
-void mul_school(unsigned int *a, unsigned int *b, int len, unsigned int *z);
+void mul_school(unsigned int *a, unsigned int *b, int len, unsigned long *z);
 void doCarry(unsigned int *a, int len);
+void doCarry_long(unsigned long *a, int len, unsigned int *z);
 
-void mul_karatsuba(unsigned int *a, unsigned int *b, int len, unsigned int *z){
+unsigned long mid[1024];
+
+void mul_karatsuba(unsigned int *a, unsigned int *b, int len, unsigned long *z){
 	
 	
 	// this function will be implemented with AVX-512F
 	// so this number will be changed.
-	if(len <= 8){
+
+	// up to 256n words (i.e., 8196 bits)
+	if(len <= 16){
 		mul_school(a, b, len, z);
 		return;
 	}
 	
-	puts("hoge");
-
 	unsigned int *a0 = &a[0];
 	unsigned int *a1 = &a[len/2];
 	unsigned int *b0 = &b[0];
 	unsigned int *b1 = &b[len/2];
-	unsigned int *v = &z[len * 5];
-	unsigned int *w = &z[len * 5 + len /2];
-	unsigned int *x1 = &z[len * 0];
-	unsigned int *x2 = &z[len * 1];
-	unsigned int *x3 = &z[len * 2];
+	unsigned int *v = (unsigned int*)&z[len * 5];
+	unsigned int *w = (unsigned int*)&z[len * 5 + len /2];
+	unsigned long *x1 = &z[len * 0];
+	unsigned long *x2 = &z[len * 1];
+	unsigned long *x3 = &z[len * 2];
 	int i;
 
 	// this is also to be vectorization
@@ -46,50 +49,48 @@ void mul_karatsuba(unsigned int *a, unsigned int *b, int len, unsigned int *z){
 	for(i=0; i<len; i++) x3[i] -= x1[i] + x2[i];
 
 	for(i=0; i<len; i++) z[i+len/2] += x3[i];
+
 }
 
 
-void mul_school(unsigned int *a, unsigned int *b, int len, unsigned int *z){
+void mul_school(unsigned int *a, unsigned int *b, int len, unsigned long *z){
 	
 	int i, j;
 
-	//for(i=0; i<len*2; i++) z[i] = 0;
-	unsigned int tmp = 0;
+	//unsigned long tmp = 0;
+	//unsigned long carry = 0;
+	for(i=0; i<len*2; i++) z[i] = 0;
 
-	for(i=0; i<len; i++){
-		for(j=0; j<len; j++){
-			tmp = z[j+i];
-			z[j+i] += a[i] * b[j];
-
-			if(tmp > z[j+i]){
-				printf("Overflow: outer=%d, inner=%d, tmp=%x, z[j+i]=%x\n", i, j, tmp, z[i+j]);
-				z[i+j+2]++;
-			}
-#ifdef TEST
-			cnt_mul++;
-#endif
-		}
-	}
-
-
-/*
-	unsigned long tmp = 0;
-	unsigned long carry = 0;
 	for(j=0; j<len; j++){
 		//carry = 0;
 		for(i=0; i<len; i++){
-			tmp = (unsigned long)z[i+j] + a[i] * b[j] + carry;
-
-			z[i+j] = LoWord(tmp);
-			carry = HiWord(tmp);
-			printf("%lu", carry);
+			z[i+j] += (unsigned long)a[i] * b[j];
 		}
-		z[i+j] = carry;
-		puts("");
+	}
+	
+	// debug
+	//for(i=len*2-1; i>=0; i--) printf("%lx ", z[i]);
+}
+
+void doCarry_long(unsigned long *a, int len, unsigned int *z){
+	
+	unsigned long cr = 0;
+	unsigned long tmp;
+	int i;
+
+/*
+	// for debug
+	for(i=0; i<len; i++){
+		printf("debug: a[%d] = %lx\n", i, a[i]);
 	}
 */
-	for(i=len*2-1; i>=0; i--) printf("%x ", z[i]);
-	puts("");
+	for(i=0; i<len; i++){
+		tmp = a[i] + cr;
+		z[i] = (unsigned int)(tmp & 0xfffffff);
+		cr = tmp >> 28;
+	}
+
+	//if(cr != 0) printf("Overflow! %d\n", cr);
 }
 
 
@@ -100,17 +101,8 @@ void doCarry(unsigned int *a, int len){
 
 	for(i=0; i<len; i++){
 		a[i] += cr;
-/*		
-		if(a[i] < 0){
-			cr = -(-(a[i] + 1) / 10 + 1);
-		}
-		else{
-			cr = a[i] / 10;
-		}
-*/
-		// ビット削りの10進数版
-		cr = a[i] >> 16;
-		a[i] &= 0xffff;
+		cr = a[i] >> 28;
+		a[i] &= 0xfffffff;
 	}
 
 	if(cr != 0) printf("Overflow! %d\n", cr);
@@ -130,31 +122,23 @@ void display(unsigned int *a, unsigned  int *b, int D_MAX, unsigned int *z)
     // a 値
     printf("a =\n0x");
     for (i = aLen - 1; i >= 0; i--) {
-        printf("%04x", a[i]);
-        //if ((aLen - i) % 10 == 0) printf(" ");
-        //if ((aLen - i) % 50 == 0) printf("\n");
+        printf("%07x", a[i]);
     }
     printf("\n");
 
     // b 値
     printf("b =\n0x");
     for (i = bLen - 1; i >= 0; i--) {
-        printf("%04x", b[i]);
-        //if ((bLen - i) % 10 == 0) printf(" ");
-        //if ((bLen - i) % 50 == 0) printf("\n");
+        printf("%07x", b[i]);
     }
     printf("\n");
 
     // z 値
     printf("z =\n0x");
     for (i = zLen - 1; i >= 0; i--) {
-        printf("%04x ", z[i]);
-        //if ((zLen - i) % 10 == 0) printf(" ");
-        //if ((zLen - i) % 50 == 0) printf("\n");
+        printf("%07x ", z[i]);
     }
-    printf("\n");
-	puts("0x2dee 2d57 82dc 4666 711c d9c1 52c6 5ac4 f76c a8f8 31e3 887f dd78 685e 8acc a437");
-    printf("\n");
+    printf("\n\n");
 	
 #ifdef TEST
     printf("Counts of multiply / 1 loop = %d\n", cnt_mul);     // 乗算回数
