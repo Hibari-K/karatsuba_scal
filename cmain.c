@@ -4,9 +4,14 @@
 
 #include "zmm_mul.h"
 
+#define COUNT
+#define LOOP 50
+
 //void mul_karatsuba(int*, int*, int, int*);
 void multiply(zmm_t data_a, zmm_t data_b, zmm_t t);
 void display(unsigned int *a, unsigned int *b, int lp, unsigned int *z);
+
+int cnt_mul;
 
 int main(int argc, char** argv){
 
@@ -35,24 +40,46 @@ int main(int argc, char** argv){
 	int i;
 
 	SIZ(a) = SIZ(b) = lp;
-	SIZ(t) = 0;
+	SIZ(t) = lp*2;
 
 	for(i=0; i<lp; i++){
 		
-		PTR(a)[i] = 0xfffffff;
-		PTR(b)[i] = 0xfffffff;
+		PTR(a)[i] = 0xffffffff;
+		PTR(b)[i] = 0xffffffff;
 		//PTR(a)[i] = rand() & 0xffff;
 		//PTR(b)[i] = rand() & 0xffff;
 	}
 
-	multiply(a, b, t);	
+	struct timeval s, e;
+	double time;
+	double total = 0.0;
+
+	for(i=0; i<LOOP; i++){
+		
+		gettimeofday(&s, NULL);
+		multiply(a, b, t);	
+		gettimeofday(&e, NULL);
+
+		total += (e.tv_sec - s.tv_sec) + (e.tv_usec - s.tv_usec)*1.0E-6;
+	}
+	
+	display(PTR(a), PTR(b), lp, PTR(t));	
+
+	time = (total / LOOP) * 1000 * 1000;
+	//time = total * 1000 * 1000;
+
+	printf("loop = %d\n", i);
+	printf("time = %lf [usec]\n", time);
+	printf("cnt_mul = %d\n", cnt_mul);
+
+
+
 /*
 	for(i=lp*2; i>=0; i--){
 		printf("%08x", PTR(t)[i]);
 	}
 	puts("");
 */
-	display(PTR(a), PTR(b), lp, PTR(t));	
 
 	free(PTR(a));
 	free(PTR(b));

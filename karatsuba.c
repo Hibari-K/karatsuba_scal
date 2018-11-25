@@ -4,11 +4,16 @@
 
 #include "zmm_mul.h"
 
+//#define DEBUG
+
+
 void mul_school(unsigned int *a, unsigned int *b, int len, unsigned long *z);
 void doCarry(unsigned int *a, int len);
 void doCarry_long(unsigned long *a, int len, unsigned int *z);
 
-unsigned long mid[1024];
+//unsigned long mid[1024];
+extern unsigned long *mid;
+extern int cnt_mul;
 
 void mul_karatsuba(unsigned int *a, unsigned int *b, int len, unsigned long *z){
 	
@@ -65,6 +70,9 @@ void mul_school(unsigned int *a, unsigned int *b, int len, unsigned long *z){
 		//carry = 0;
 		for(i=0; i<len; i++){
 			z[i+j] += (unsigned long)a[i] * b[j];
+#ifdef COUNT
+			cnt_mul++;
+#endif
 		}
 	}
 	
@@ -122,24 +130,38 @@ void display(unsigned int *a, unsigned  int *b, int D_MAX, unsigned int *z)
     // a 値
     printf("a =\n0x");
     for (i = aLen - 1; i >= 0; i--) {
-        printf("%07x", a[i]);
+        printf("%08x", a[i]);
     }
     printf("\n");
 
     // b 値
     printf("b =\n0x");
     for (i = bLen - 1; i >= 0; i--) {
-        printf("%07x", b[i]);
+        printf("%08x", b[i]);
     }
     printf("\n");
 
     // z 値
     printf("z =\n0x");
     for (i = zLen - 1; i >= 0; i--) {
-        printf("%07x ", z[i]);
+        printf("%08x ", z[i]);
     }
     printf("\n\n");
-	
+
+
+#ifdef DEBUG
+	puts("python code:");
+	printf("hex(0x");
+    for (i = aLen - 1; i >= 0; i--) printf("%08x", a[i]);
+	printf(" * 0x");
+    for (i = bLen - 1; i >= 0; i--) printf("%08x", b[i]);
+	printf(") == '0x");
+    for (i = zLen - 1; i >= 0; i--) printf("%08x", z[i]);
+	printf("'");
+	puts("");
+#endif
+
+
 #ifdef TEST
     printf("Counts of multiply / 1 loop = %d\n", cnt_mul);     // 乗算回数
     printf("Total time of all loops     = %f seconds\n", tt);  // 処理時間
