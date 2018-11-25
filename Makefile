@@ -1,6 +1,6 @@
 CC		= gcc
-CFLAGS	= -O3 -Wall -g
-OBJ		= cmain.o karatsuba.o multiply.o split_28bit.o combine_28bit.o
+CFLAGS	= -O3 -Wall
+OBJ		= cmain.o karatsuba.o multiply.o split_28bit.o combine_28bit.o unroll.o
 PROG	= karatsuba
 
 

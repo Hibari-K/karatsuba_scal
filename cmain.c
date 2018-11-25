@@ -4,7 +4,7 @@
 
 #include "zmm_mul.h"
 
-#define DEBUG
+//#define DEBUG
 #define COUNT
 #define LOOP 50
 
@@ -45,10 +45,10 @@ int main(int argc, char** argv){
 
 	for(i=0; i<lp; i++){
 		
-		//PTR(a)[i] = 0xffffffff;
-		//PTR(b)[i] = 0xffffffff;
-		PTR(a)[i] = rand();
-		PTR(b)[i] = rand();
+		PTR(a)[i] = 0xffffffff;
+		PTR(b)[i] = 0xffffffff;
+		//PTR(a)[i] = rand();
+		//PTR(b)[i] = rand();
 	}
 
 	struct timeval s, e;
