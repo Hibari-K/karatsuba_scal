@@ -4,6 +4,7 @@
 
 #include "zmm_mul.h"
 
+#define DEBUG
 #define COUNT
 #define LOOP 50
 
@@ -44,10 +45,10 @@ int main(int argc, char** argv){
 
 	for(i=0; i<lp; i++){
 		
-		PTR(a)[i] = 0xffffffff;
-		PTR(b)[i] = 0xffffffff;
-		//PTR(a)[i] = rand() & 0xffff;
-		//PTR(b)[i] = rand() & 0xffff;
+		//PTR(a)[i] = 0xffffffff;
+		//PTR(b)[i] = 0xffffffff;
+		PTR(a)[i] = rand();
+		PTR(b)[i] = rand();
 	}
 
 	struct timeval s, e;
@@ -62,24 +63,17 @@ int main(int argc, char** argv){
 
 		total += (e.tv_sec - s.tv_sec) + (e.tv_usec - s.tv_usec)*1.0E-6;
 	}
-	
+
+#ifdef DEBUG
 	display(PTR(a), PTR(b), lp, PTR(t));	
+#endif
 
 	time = (total / LOOP) * 1000 * 1000;
-	//time = total * 1000 * 1000;
 
 	printf("loop = %d\n", i);
 	printf("time = %lf [usec]\n", time);
 	printf("cnt_mul = %d\n", cnt_mul);
 
-
-
-/*
-	for(i=lp*2; i>=0; i--){
-		printf("%08x", PTR(t)[i]);
-	}
-	puts("");
-*/
 
 	free(PTR(a));
 	free(PTR(b));

@@ -6,7 +6,6 @@
 
 //#define DEBUG
 
-
 void mul_school(unsigned int *a, unsigned int *b, int len, unsigned long *z);
 void doCarry(unsigned int *a, int len);
 void doCarry_long(unsigned long *a, int len, unsigned int *z);

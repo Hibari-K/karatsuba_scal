@@ -18,21 +18,32 @@ void multiply(zmm_t a, zmm_t b, zmm_t t){
 	// 16の倍数であればセーフ
 	int size;
 	
-	unsigned int *data_a = malloc(SIZ(a)*2 * sizeof(long));
-	unsigned int *data_b = malloc(SIZ(b)*2 * sizeof(long));
-	unsigned int *data_t = malloc(SIZ(t)*2 * sizeof(long));
-	mid = calloc(SIZ(a)*6, sizeof(long));	
-
 	int a_bitsize, b_bitsize, t_bitsize;
 	a_bitsize = SIZ(a) * 32;
 	b_bitsize = SIZ(b) * 32;
+	if(a_bitsize >= b_bitsize) size = SIZ(a);
+	else size = SIZ(b);
 	
-	if(a_bitsize >= b_bitsize) size = a_bitsize;
-	else size = b_bitsize;
-
 	t_bitsize = SIZ(t) * 32;
 
-	int kara_size = ((int)(SIZ(a) * 1.1428) & 0xfffffff0) + 16;
+	// actual size of multiplier and multiplicand in karatsuba multiplication
+	int kara_size = ((int)(size * 1.1428) & 0xfffffff0) + 16;
+	
+	unsigned int *data_a, *data_b, *data_t;
+	data_a = malloc(kara_size*4 * sizeof(int));
+	if(!data_a){
+		puts("malloc error.");
+		exit(1);
+	}
+
+	data_b = &data_a[kara_size * 1];
+	data_t = &data_a[kara_size * 2];
+
+	mid = calloc(kara_size*6, sizeof(long));	
+	if(!mid){
+		puts("calloc error.");
+		exit(1);
+	}
 
 	int a_split, b_split, t_comb;
 	a_split = a_bitsize / 56;
@@ -49,7 +60,5 @@ void multiply(zmm_t a, zmm_t b, zmm_t t){
 	combine_28bit(data_t, PTR(t), t_comb);
 
 	free(data_a);
-	free(data_b);
-	free(data_t);
 	free(mid);
 }
